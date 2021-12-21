@@ -14,7 +14,6 @@ import ProtectedRoute from "./components/common/protectedRoute";
 import "./App.css";
 import "react-toastify/dist/ReactToastify.css";
 import auth from "./services/authService";
-
 class App extends Component {
   state = {};
   componentDidMount() {

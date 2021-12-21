@@ -3,6 +3,8 @@ import Joi from "joi-browser";
 import { getGenres } from "../services/genreService";
 import { getMovie, saveMovie } from "../services/movieService";
 import Form from "./common/form";
+import Loader from "./common/loader";
+import { Fragment } from "react/cjs/react.production.min";
 
 export default class MovieForm extends Form {
   state = {
@@ -14,6 +16,7 @@ export default class MovieForm extends Form {
     },
     errors: {},
     genres: [],
+    loader: true,
   };
   schema = {
     title: Joi.string().min(3).required().label("Title"),
@@ -46,6 +49,7 @@ export default class MovieForm extends Form {
   async componentDidMount() {
     await this.populateGenres();
     await this.populateMovie();
+    this.setState({ loader: false });
   }
   mapToViewModel() {
     const { data } = this.state;
@@ -58,21 +62,31 @@ export default class MovieForm extends Form {
     };
   }
   async doSubmit() {
-    const savedMovie = await saveMovie(this.mapToViewModel());
-    if (savedMovie) return this.props.history.replace("/movies");
+    this.props.history.replace("/movies");
+    return await saveMovie(this.mapToViewModel());
   }
   render() {
+    const { loader } = this.state;
     return (
-      <div className="row">
-        <h1 className="text-center">Movie Form</h1>
-        <form onSubmit={this.handleSubmit} className="offset-4 col-4">
-          {this.renderInput("title", "Title")}
-          {this.renderSelect("genreId", "Genre", this.state.genres)}
-          {this.renderInput("stock", "Stock", "number")}
-          {this.renderInput("rate", "Rate", "number")}
-          {this.renderButton("Save")}
-        </form>
-      </div>
+      <Fragment>
+        {loader && (
+          <div className="offset-5">
+            <Loader />
+          </div>
+        )}
+        {!loader && (
+          <div className="row">
+            <h1 className="text-center">Movie Form</h1>
+            <form onSubmit={this.handleSubmit} className="offset-4 col-4">
+              {this.renderInput("title", "Title")}
+              {this.renderSelect("genreId", "Genre", this.state.genres)}
+              {this.renderInput("stock", "Stock", "number")}
+              {this.renderInput("rate", "Rate", "number")}
+              {this.renderButton("Save")}
+            </form>
+          </div>
+        )}
+      </Fragment>
     );
   }
 }

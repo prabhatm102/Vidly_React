@@ -4,6 +4,7 @@ import { getGenres } from "../services/genreService";
 import ListGroup from "./common/listgroup";
 import SearchBox from "./common/searchBox";
 import Pagination from "./common/pagination";
+import Loader from "./common/loader";
 import { paginate } from "../utils/paginate";
 import MoviesTable from "./moviesTable";
 import _ from "lodash";
@@ -19,6 +20,7 @@ export default class Movies extends Component {
     selectedGenre: {},
     searchQuery: "",
     sortColumn: { path: "title", order: "asc" },
+    loader: true,
   };
   async componentDidMount() {
     const { data } = await getGenres();
@@ -27,7 +29,7 @@ export default class Movies extends Component {
     const result = await getMovies();
     if (result) {
       const { data: movies } = result;
-      this.setState({ movies, genres });
+      this.setState({ movies, genres, loader: false });
     }
   }
   handleDelete = async (id) => {
@@ -119,45 +121,53 @@ export default class Movies extends Component {
 
     const { totalCount, data: movies } = this.getPagedData();
     const { user } = this.props;
+    const { loader } = this.state;
     return (
       <React.Fragment>
-        <div className="row">
-          <div className="col-3">
-            <ListGroup
-              items={genres}
-              selectedItem={selectedGenre}
-              onItemSelect={this.handleGenreSelect}
-            />
+        {loader && (
+          <div className="offset-5">
+            <Loader />
           </div>
-          <div className="col">
-            {user && user.isAdmin && (
-              <Link to="/movies/new" className="btn btn-primary">
-                New Movie
-              </Link>
-            )}
-            <p>
-              Showing {movies.length} of {totalCount} movies from database.
-            </p>
-            <div className="col-4">
-              <SearchBox value={searchQuery} onChange={this.handleSearch} />
+        )}
+        {!loader && (
+          <div className="row">
+            <div className="col-3">
+              <ListGroup
+                items={genres}
+                selectedItem={selectedGenre}
+                onItemSelect={this.handleGenreSelect}
+              />
             </div>
-            <MoviesTable
-              movies={movies}
-              sortColumn={sortColumn}
-              onDelete={this.handleDelete}
-              onDetails={this.handleDetails}
-              onLike={this.handleLike}
-              onSort={this.handleSort}
-            />
-            <Pagination
-              itemCount={totalCount}
-              onPageChange={this.handlePageChange}
-              pageSize={pageSize}
-              currentPage={currentPage}
-              selectedGenre={selectedGenre}
-            />
+            <div className="col">
+              {user && user.isAdmin && (
+                <Link to="/movies/new" className="btn btn-primary">
+                  New Movie
+                </Link>
+              )}
+              <p>
+                Showing {movies.length} of {totalCount} movies from database.
+              </p>
+              <div className="col-4">
+                <SearchBox value={searchQuery} onChange={this.handleSearch} />
+              </div>
+              <MoviesTable
+                movies={movies}
+                sortColumn={sortColumn}
+                onDelete={this.handleDelete}
+                onDetails={this.handleDetails}
+                onLike={this.handleLike}
+                onSort={this.handleSort}
+              />
+              <Pagination
+                itemCount={totalCount}
+                onPageChange={this.handlePageChange}
+                pageSize={pageSize}
+                currentPage={currentPage}
+                selectedGenre={selectedGenre}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </React.Fragment>
     );
   }
